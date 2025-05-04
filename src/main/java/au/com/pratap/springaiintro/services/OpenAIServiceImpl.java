@@ -8,15 +8,11 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 import org.springframework.core.io.Resource;
-import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
-/**
- * Created by jt, Spring Framework Guru.
- */
 @Service
 public class OpenAIServiceImpl implements OpenAIService {
 
@@ -24,6 +20,9 @@ public class OpenAIServiceImpl implements OpenAIService {
 
     @Value("classpath:templates/get-capital-prompt.st")
     private Resource getCapitalPrompt;
+
+    @Value("classpath:templates/get-capital-with-info.st")
+    private Resource getCapitalPromptWithInfo;
 
     public OpenAIServiceImpl(ChatModel chatModel) {
         this.chatModel = chatModel;
@@ -46,6 +45,15 @@ public class OpenAIServiceImpl implements OpenAIService {
         ChatResponse response = chatModel.call(prompt);
 
         return response.getResult().getOutput().getText();
+    }
+
+    @Override
+    public Answer getCapitalWithInfo(GetCapitalRequest getCapitalRequest) {
+        PromptTemplate promptTemplate = new PromptTemplate(getCapitalPromptWithInfo);
+        Prompt prompt = promptTemplate.create(Map.of("stateOrCountry", getCapitalRequest.stateOrCountry()));
+        ChatResponse response = chatModel.call(prompt);
+
+        return new Answer(response.getResult().getOutput().getText());
     }
 
     @Override
